@@ -11,7 +11,6 @@ api.addButtonToToolbar({
     icon: 'calendar',
     shortcut: 'alt+y',
     action: async function () {
-        debugger;
         const curnote = await api.getActiveTabNote();
         const notes = curnote.children
         debugger;
@@ -28,24 +27,18 @@ api.addButtonToToolbar({
         console.info(notes);
         console.info(notes.length)
         // debugger;
-        var noteIdArray = new Array();
-        var tmpLength = 0;
-        var noSplshCount = 0;
-        var count = 0;
+        var isRemoveHyphenFlag = false;
+
         for (const note1 of notes) {
-            const note = await api.getNote(note1);
+            const notetmp = await api.getNote(note1);
             await api.waitUntilSynced();
-            if (note.title.indexOf("-") >= 0) {
-                console.info(note.title)
-                tmpLength = tmpLength + 1;
-            } else {
-                noSplshCount = noSplshCount + 1;
+            if (/^\d+-/.test(notetmp.title)) {
+                console.info(notetmp.title)
+                isRemoveHyphenFlag = true;
             }
-            noteIdArray[count] = note.noteId;
-            count = count + 1;
         }
 
-        if (tmpLength - notes.length == 0) {
+        if (isRemoveHyphenFlag) {
             //移除编号
             for (const note1 of notes) {
 
@@ -61,9 +54,7 @@ api.addButtonToToolbar({
                     note.save();
                 }, [newTitle, notetmp.noteId]);
             }
-        }
-
-        if (noSplshCount - notes.length == 0) {
+        } else {
             //增加编号
             var num = 0;
             for (const note1 of notes) {
@@ -71,7 +62,7 @@ api.addButtonToToolbar({
 
                 const notetmp = await api.getNote(note1);
                 await api.waitUntilSynced();
-                
+
                 var newTitle = zeroPad(num, 3) + "-" + notetmp.title;
                 console.info("123  " + newTitle)
                 await api.runOnBackend(async (newTitle, noteId) => {
@@ -82,6 +73,7 @@ api.addButtonToToolbar({
 
             }
         }
+
 
     }
 });
