@@ -1,0 +1,1 @@
+# trilium_auto_numbers
