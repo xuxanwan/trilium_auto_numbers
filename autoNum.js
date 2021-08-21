@@ -31,11 +31,18 @@ api.addButtonToToolbar({
 
         for (const note1 of notes) {
             const notetmp = await api.getNote(note1);
-            await api.waitUntilSynced();
-            if (/^\d+-/.test(notetmp.title)) {
-                console.info(notetmp.title)
+            const branch = notetmp.getBranches()[0];
+            
+            if (/^\d+/.test(branch.prefix)) {
+                console.info(branch.prefix)
                 isRemoveHyphenFlag = true;
             }
+
+            // await api.waitUntilSynced();
+            // if (/^\d+-/.test(notetmp.title)) {
+            //     console.info(notetmp.title)
+            //     isRemoveHyphenFlag = true;
+            // }
         }
 
         if (isRemoveHyphenFlag) {
@@ -49,9 +56,13 @@ api.addButtonToToolbar({
                 console.info("123  " + newTitle)
 
                 await api.runOnBackend(async (newTitle, noteId) => {
-                    const note = api.getNote(noteId);
+                     const note = api.getNote(noteId);
                     note.title = newTitle;
                     note.save();
+
+                    const branch = note.getBranches()[0];
+                    branch.prefix = "";
+                    branch.save();
                 }, [newTitle, notetmp.noteId]);
             }
         } else {
@@ -62,14 +73,18 @@ api.addButtonToToolbar({
 
                 const notetmp = await api.getNote(note1);
                 await api.waitUntilSynced();
-
+                var prefixStr = zeroPad(num, 3);
                 var newTitle = zeroPad(num, 3) + "-" + notetmp.title;
                 console.info("123  " + newTitle)
-                await api.runOnBackend(async (newTitle, noteId) => {
-                    const note = api.getNote(noteId);
-                    note.title = newTitle;
-                    note.save();
-                }, [newTitle, notetmp.noteId]);
+                await api.runOnBackend(async (newTitle, noteId, prefixStr) => {
+                     const note = api.getNote(noteId);
+                    // note.title = newTitle;
+                    // note.save();
+                    
+                    const branch = note.getBranches()[0];
+                    branch.prefix = prefixStr;
+                    branch.save();
+                }, [newTitle, notetmp.noteId, prefixStr]);
 
             }
         }
