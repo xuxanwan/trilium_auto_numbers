@@ -9,7 +9,7 @@ function zeroPad(num, count) {
 api.addButtonToToolbar({
     title: 'Sort',
     icon: 'calendar',
-    shortcut: 'alt+y',
+    shortcut: 'alt+z',
     action: async function () {
         const curnote = await api.getActiveTabNote();
         const notes = curnote.children
@@ -31,8 +31,15 @@ api.addButtonToToolbar({
 
         for (const note1 of notes) {
             const notetmp = await api.getNote(note1);
-            const branch = notetmp.getBranches()[0];
-            
+
+            const branchs = notetmp.getBranches();
+            var branch;
+            for(const tmp of branchs){
+                if(tmp.parentNoteId === curnote.noteId){
+                    branch = tmp;
+                }
+            }
+
             if (/^\d+/.test(branch.prefix)) {
                 console.info(branch.prefix)
                 isRemoveHyphenFlag = true;
@@ -55,15 +62,21 @@ api.addButtonToToolbar({
                 var newTitle = notetmp.title.slice(notetmp.title.indexOf("-") + 1, notetmp.title.length);
                 console.info("123  " + newTitle)
 
-                await api.runOnBackend(async (newTitle, noteId) => {
-                     const note = api.getNote(noteId);
+                await api.runOnBackend(async (newTitle, noteId, parentNoteId) => {
+                    const note = api.getNote(noteId);
                     note.title = newTitle;
                     note.save();
 
-                    const branch = note.getBranches()[0];
-                    branch.prefix = "";
-                    branch.save();
-                }, [newTitle, notetmp.noteId]);
+                    const branchs = note.getBranches();
+                    for(const branch of branchs){
+                        log.info("parentNoteId------"+parentNoteId+"---branch.parentNoteId----"+branch.parentNoteId);
+                        if(branch.parentNoteId === parentNoteId){
+                            log.info("---modify---");
+                            branch.prefix = "";
+                            branch.save();
+                        }
+                    }
+                }, [newTitle, notetmp.noteId, curnote.noteId]);
             }
         } else {
             //增加编号
@@ -76,15 +89,19 @@ api.addButtonToToolbar({
                 var prefixStr = zeroPad(num, 3);
                 var newTitle = zeroPad(num, 3) + "-" + notetmp.title;
                 console.info("123  " + newTitle)
-                await api.runOnBackend(async (newTitle, noteId, prefixStr) => {
-                     const note = api.getNote(noteId);
+                await api.runOnBackend(async (newTitle, noteId, prefixStr, parentNoteId) => {
+                    const note = api.getNote(noteId);
                     // note.title = newTitle;
                     // note.save();
-                    
-                    const branch = note.getBranches()[0];
-                    branch.prefix = prefixStr;
-                    branch.save();
-                }, [newTitle, notetmp.noteId, prefixStr]);
+
+                    const branchs = note.getBranches();
+                    for(const branch of branchs){
+                        if(branch.parentNoteId === parentNoteId){
+                            branch.prefix = prefixStr;
+                            branch.save();
+                        }
+                    }
+                }, [newTitle, notetmp.noteId, prefixStr, curnote.noteId]);
 
             }
         }
