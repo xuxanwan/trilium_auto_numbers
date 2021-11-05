@@ -8,7 +8,7 @@ function zeroPad(num, count) {
 
 api.addButtonToToolbar({
     title: 'Sort',
-    icon: 'calendar',
+    icon: 'sort-up',
     shortcut: 'alt+z',
     action: async function () {
         const curnote = await api.getActiveTabNote();
