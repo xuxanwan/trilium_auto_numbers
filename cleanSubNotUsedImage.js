@@ -7,16 +7,14 @@ api.addButtonToToolbar({
         var notes = [];
         const filterChildBranches = curnote.getFilteredChildBranches();
         for(const branch of filterChildBranches){
-            notes.push(branch.noteId);
+            const notetmp = await api.getNote(branch.noteId);
+            if(notetmp.type === "image"){
+                notes.push(branch.noteId);
+            }
         }
         debugger;
         console.info(notes);
         console.info(notes.length)
-        for (const note1 of notes) {
-            const notetmp = await api.getNote(note1);
-            console.info(notetmp)
-            console.info(notetmp.getFilteredChildBranches())
-        }
 
         await api.runOnBackend(async (notes) => {
             const utils = require('../services/utils');
