@@ -82,9 +82,12 @@ api.addButtonToToolbar({
             //增加编号
             var num = 0;
             for (const note1 of notes) {
-                num = num + 1;
-
                 const notetmp = await api.getNote(note1);
+                if(notetmp.title.endsWith(".png")||notetmp.title.endsWith(".jpeg")||notetmp.title.endsWith(".gif")){
+                  continue;
+                }
+                num = num + 1;
+                
                 await api.waitUntilSynced();
                 var prefixStr = zeroPad(num, 3);
                 var newTitle = zeroPad(num, 3) + "-" + notetmp.title;
